@@ -1,1 +1,77 @@
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   // mahasiswa, dosen, admin
+  nama      String
+  prodi     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  krs       KRS[]
+  nilai     Nilai[]
+  kelasAjar JadwalKuliah[] @relation("DosenJadwal")
+}
+
+model MataKuliah {
+  id        String   @id @default(uuid())
+  kode      String   @unique
+  nama      String
+  sks       Int
+  semester  Int
+  prodi     String
+  createdAt DateTime @default(now())
+
+  jadwal    JadwalKuliah[]
+  krs       KRS[]
+}
+
+model JadwalKuliah {
+  id            String     @id @default(uuid())
+  mataKuliahId  String
+  dosenId       String
+  hari          String
+  jamMulai      String
+  jamSelesai    String
+  ruangan       String
+  mataKuliah    MataKuliah @relation(fields: [mataKuliahId], references: [id])
+  dosen         User       @relation("DosenJadwal", fields: [dosenId], references: [id])
+}
+
+model KRS {
+  id            String     @id @default(uuid())
+  mahasiswaId   String
+  mataKuliahId  String
+  semester      String
+  mahasiswa     User       @relation(fields: [mahasiswaId], references: [id])
+  mataKuliah    MataKuliah @relation(fields: [mataKuliahId], references: [id])
+}
+
+model Nilai {
+  id            String     @id @default(uuid())
+  mahasiswaId   String
+  mataKuliahId  String
+  nilai         Float
+  grade         String
+  mahasiswa     User       @relation(fields: [mahasiswaId], references: [id])
+  mataKuliah    MataKuliah @relation(fields: [mataKuliahId], references: [id])
+}
+
+model Berita {
+  id        String   @id @default(uuid())
+  judul     String
+  konten    String
+  kategori  String
+  gambar    String?
+  createdAt DateTime @default(now())
+}
